@@ -1,36 +1,6 @@
-name: CI
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+name: Build ZMK firmware
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    env:
-      # Force all JavaScript actions to run on Node.js 24 now
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-      
-    steps:
-      # Checkout your repository
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      # Set up Node.js 24 (you can switch to 20 if needed temporarily)
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '24'
-
-      # Install dependencies
-      - name: Install dependencies
-        run: npm install
-
-      # Run tests
-      - name: Run tests
-        run: npm test
-
-      # Optional: Lint code
-      - name: Lint
-        run: npm run lint
+    uses: zmkfirmware/zmk/.github/workflows/build-user-config.yml@v0.3
