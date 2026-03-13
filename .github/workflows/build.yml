@@ -10,34 +10,41 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       ZEPHYR_TOOLCHAIN_VARIANT: zephyr
       ZEPHYR_SDK_INSTALL_DIR: ${{ github.workspace }}/zephyr-sdk
 
     steps:
+      # -------------------------
       # Checkout repository
+      # -------------------------
       - name: Checkout code
         uses: actions/checkout@v4
 
       # -------------------------
-      # Node.js Setup (optional)
+      # Node.js 24 setup and tasks
       # -------------------------
       - name: Setup Node.js 24
         uses: actions/setup-node@v3
         with:
           node-version: '24'
 
-      - name: Install Node dependencies (if package.json exists)
+      - name: Install Node dependencies
         if: exists('package.json')
         run: npm install
 
-      - name: Run Node tests (if package.json exists)
+      - name: Run Node tests
         if: exists('package.json')
         run: npm test
 
+      - name: Lint Node code
+        if: exists('package.json')
+        run: npm run lint
+
       # -------------------------
-      # Zephyr / ZMK Setup
+      # Python / Zephyr / ZMK setup
       # -------------------------
-      - name: Set up Python
+      - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
@@ -50,7 +57,7 @@ jobs:
       - name: Install West (Zephyr meta-tool)
         run: pip install --upgrade west
 
-      # Cache Zephyr modules and build output
+      # Cache Zephyr/WEST build to speed up CI
       - name: Cache West & Build
         uses: actions/cache@v3
         with:
@@ -75,9 +82,9 @@ jobs:
             -DZMK_EXTRA_MODULES=${{ github.workspace }}/zmk-config-macropad
 
       # -------------------------
-      # Optional: Node.js 20 for other scripts
+      # Optional: switch Node.js to 20
       # -------------------------
-      - name: Switch to Node.js 20 (optional)
+      - name: Setup Node.js 20 (optional)
         uses: actions/setup-node@v3
         with:
           node-version: '20'
