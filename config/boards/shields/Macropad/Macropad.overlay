@@ -42,7 +42,7 @@
 
     layout: layout {
         compatible = "zmk,physical-layout";
-        display-name = "Ortho 3x6";
+        display-name = "Ortho 6x6";
         transform = <&transform>;
         kscan = <&kscan>;
 

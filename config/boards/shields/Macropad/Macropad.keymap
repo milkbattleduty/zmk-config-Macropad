@@ -8,7 +8,7 @@
             compatible = "zmk,behavior-tap-dance";
             #binding-cells = <0>;
             tapping-term-ms = <135>;
-            bindings = <&kp M>, <&tog 1>;
+            bindings = <&kp KP_DOT>, <&tog 1>;
         };
     };
 
