@@ -1,40 +1,4 @@
-name: CI
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    env:
-      # Force all JavaScript actions to run on Node.js 24 now
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
-    steps:
-      # Checkout your repository
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      # Set up Node.js 24 (you can switch to 20 if needed temporarily)
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '24'
-
-      # Install dependencies
-      - name: Install dependencies
-        run: npm install
-
-      # Run tests
-      - name: Run tests
-        run: npm test
-
-      # Optional: Lint code
-      - name: Lint
-        run: npm run lint
-name: Build ZMK Firmware
+name: CI + Build ZMK Firmware
 
 on:
   push:
@@ -50,21 +14,53 @@ jobs:
       ZEPHYR_SDK_INSTALL_DIR: ${{ github.workspace }}/zephyr-sdk
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      # Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v4
 
+      # -------------------------
+      # Node.js Setup (optional)
+      # -------------------------
+      - name: Setup Node.js 24
+        uses: actions/setup-node@v3
+        with:
+          node-version: '24'
+
+      - name: Install Node dependencies (if package.json exists)
+        if: exists('package.json')
+        run: npm install
+
+      - name: Run Node tests (if package.json exists)
+        if: exists('package.json')
+        run: npm test
+
+      # -------------------------
+      # Zephyr / ZMK Setup
+      # -------------------------
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
 
-      - name: Install required packages
+      - name: Install system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y cmake ninja-build gperf dfu-util device-tree-compiler python3-pip python3-setuptools python3-wheel python3-dev
 
       - name: Install West (Zephyr meta-tool)
         run: pip install --upgrade west
+
+      # Cache Zephyr modules and build output
+      - name: Cache West & Build
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.west
+            ~/.cache/zephyr
+            build
+          key: ${{ runner.os }}-zmk-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-zmk-
 
       - name: Initialize Zephyr modules
         run: |
@@ -77,3 +73,11 @@ jobs:
             -DSHIELD=Macropad \
             -DZMK_CONFIG=${{ github.workspace }}/config \
             -DZMK_EXTRA_MODULES=${{ github.workspace }}/zmk-config-macropad
+
+      # -------------------------
+      # Optional: Node.js 20 for other scripts
+      # -------------------------
+      - name: Switch to Node.js 20 (optional)
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
