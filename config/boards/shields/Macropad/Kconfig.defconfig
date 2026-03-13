@@ -2,5 +2,5 @@ if SHIELD_MACROPAD
 
 config ZMK_KEYBOARD_NAME
     default "Macropad"
-    
+
 endif
